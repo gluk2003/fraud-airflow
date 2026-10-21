@@ -4,6 +4,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.request import urlopen
 
 
 def compose(*args):
@@ -16,6 +17,18 @@ def run_dag(name, stamp):
         raise AssertionError(f'{name} did not report success:\n{output[-6000:]}')
     print(name, 'SUCCESS', flush=True)
 
+
+for attempt in range(60):
+    try:
+        with urlopen('http://localhost:8081/health', timeout=3) as response:
+            health = json.load(response)
+        if health['metadatabase']['status'] == 'healthy' and health['scheduler']['status'] == 'healthy':
+            break
+    except (OSError, ValueError):
+        pass
+    time.sleep(2)
+else:
+    raise SystemExit('Airflow webserver/scheduler did not become healthy')
 
 stamp = datetime.now(timezone.utc).isoformat()
 manifest = Path('artifacts/models/latest.json')

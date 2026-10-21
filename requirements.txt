@@ -3,3 +3,5 @@ numpy==1.26.4
 scikit-learn==1.5.2
 joblib==1.4.2
 kafka-python==2.0.2
+# Airflow extends pickle via dill; inference must use the same deserializer.
+dill==0.3.1.1
