@@ -1,0 +1,19 @@
+name: pipeline-tests
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q
+      - run: docker compose config --quiet
+  dag-imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f Dockerfile.airflow -t fraud-airflow .
+      - run: docker run --rm --entrypoint python fraud-airflow -c "from airflow.models import DagBag; b=DagBag('/opt/airflow/dags', include_examples=False); assert not b.import_errors, b.import_errors; assert set(b.dags) == {'retrain_fraud_model', 'supply_labeled_month', 'dataset_quality'}"
