@@ -135,8 +135,18 @@ DAG `dataset_quality`: `snapshot_dataset → write_html_and_enforce_rules`. Пр
 
 ## Проверки и структура
 
+На чистом запущенном стенде можно автоматически выполнить три DAG и проверить новую версию в реальных потоковых скорах без перезапуска контейнера:
+
 ```bash
-python3 -m venv .venv
+python3 scripts/verify_stack.py
+```
+
+Результат сохраняется в `artifacts/verification.json`. Перед этой проверкой оставьте DAG на паузе и не запускайте их вручную, чтобы начальным состоянием был bootstrap.
+
+Локальные тесты требуют Python 3.11, как и образы проекта.
+
+```bash
+python3.11 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt pytest
 pytest -q
